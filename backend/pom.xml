@@ -33,6 +33,25 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Spring Data JPA: guardar y leer objetos Java en una base de datos sin escribir SQL -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- H2: base de datos que vive en memoria (se borra al apagar el servidor). Ideal para demos -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Validation: reglas como @NotBlank o @Positive para revisar los datos que llegan -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
         <!-- Pruebas automáticas (JUnit, etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -6,6 +6,25 @@ spring:
   application:
     name: techstore-api
 
+  # Base de datos H2 en memoria: se crea al arrancar y se borra al apagar.
+  datasource:
+    url: jdbc:h2:mem:techstore
+    username: sa
+    password:
+
+  jpa:
+    # Hibernate crea las tablas a partir de las clases @Entity.
+    hibernate:
+      ddl-auto: create-drop
+    # Desactiva una opción de Spring que mantiene la conexión a la BD abierta
+    # durante toda la petición (no la necesitamos y genera una advertencia).
+    open-in-view: false
+
+  h2:
+    console:
+      # La consola web de H2 queda APAGADA. Solo se activará en el perfil "local".
+      enabled: false
+
 server:
   # Render inyecta la variable PORT; en local usamos 8080.
   port: ${PORT:8080}
