@@ -1,0 +1,4 @@
+# El script mvnw se ejecuta en Linux (Docker/Render): debe tener saltos de línea LF.
+# mvnw.cmd se ejecuta en Windows: CRLF.
+mvnw text eol=lf
+*.cmd text eol=crlf

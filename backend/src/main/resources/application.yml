@@ -1,0 +1,14 @@
+# Configuración principal de la aplicación.
+# Los valores con ${VARIABLE:defecto} se leen de variables de entorno;
+# si la variable no existe, se usa el valor después de los dos puntos.
+
+spring:
+  application:
+    name: techstore-api
+
+server:
+  # Render inyecta la variable PORT; en local usamos 8080.
+  port: ${PORT:8080}
+  error:
+    # Nunca enviar el stack trace (detalle interno del error) al cliente.
+    include-stacktrace: never
