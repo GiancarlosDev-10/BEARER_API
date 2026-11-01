@@ -1,0 +1,13 @@
+# Archivos que Docker NO debe copiar al construir la imagen.
+
+# Resultados de compilaciones locales (Docker compila por su cuenta)
+target/
+
+# SECRETOS locales: nunca deben terminar dentro de una imagen
+src/main/resources/application-local.yml
+*.env
+
+# Otros
+*.log
+.idea/
+.vscode/
