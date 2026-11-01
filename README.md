@@ -22,7 +22,8 @@ Backend en **Java + Spring Boot** que muestra los dos tipos de credenciales más
 7. [Frontend](#frontend)
 8. [Publicación (Render + GitHub Pages)](#publicación-render--github-pages)
 9. [Estructura del proyecto](#estructura-del-proyecto)
-10. [Notas de versión](#notas-de-versión)
+10. [Pendientes y mejoras futuras](#pendientes-y-mejoras-futuras)
+11. [Notas de versión](#notas-de-versión)
 
 ---
 
@@ -97,7 +98,9 @@ cp src/main/resources/application-local.example.yml src/main/resources/applicati
 
 `application-local.yml` está en `.gitignore`: **nunca se sube a GitHub**.
 
-**3. Generar dos claves aleatorias** y pegarlas en `application-local.yml`
+**3. Completar `application-local.yml`**
+
+Genera dos claves aleatorias y pégalas:
 
 ```bash
 openssl rand -base64 48 | tr -d '\r\n'; echo     # -> techstore.jwt.secret
@@ -105,6 +108,8 @@ openssl rand -hex 24 | tr -d '\r\n'; echo        # -> techstore.proveedor.api-ke
 ```
 
 > ⚠️ En Windows, `openssl` agrega un `\r` invisible al final. El `tr -d '\r\n'` lo elimina; sin él, la clave tendría un carácter extra.
+
+Y escribe las contraseñas de los usuarios de prueba en `techstore.usuarios.admin-password` (ana) y `techstore.usuarios.cliente-password` (carlos). Mínimo 8 caracteres. Si trabajan en grupo, pónganse de acuerdo para usar las mismas.
 
 **4. Ejecutar con el perfil `local`**
 
@@ -130,6 +135,8 @@ curl http://localhost:8080/api/public/estado
 ```bash
 export JWT_SECRET="$(openssl rand -base64 48 | tr -d '\r\n')"
 export PROVEEDOR_API_KEY="$(openssl rand -hex 24 | tr -d '\r\n')"
+export ADMIN_PASSWORD="elige-una-contraseña"
+export CLIENTE_PASSWORD="elige-otra-contraseña"
 echo "Tu API Key: $PROVEEDOR_API_KEY"
 ./mvnw spring-boot:run
 ```
@@ -140,6 +147,8 @@ echo "Tu API Key: $PROVEEDOR_API_KEY"
 |---|---|---|---|
 | `JWT_SECRET` | ✅ | — | Clave para firmar los tokens (mín. 32 caracteres) |
 | `PROVEEDOR_API_KEY` | ✅ | — | API Key del sistema proveedor (mín. 32 caracteres) |
+| `ADMIN_PASSWORD` | ✅ | — | Contraseña de **ana** (ADMIN), mín. 8 caracteres |
+| `CLIENTE_PASSWORD` | ✅ | — | Contraseña de **carlos** (CLIENTE), mín. 8 caracteres |
 | `JWT_EXPIRACION_MINUTOS` | | `15` | Minutos de validez del token |
 | `CORS_ORIGENES` | | `http://localhost:5500,http://127.0.0.1:5500,https://giancarlosdev-10.github.io` | Páginas web que pueden llamar a la API |
 | `PORT` | | `8080` | Puerto (Render lo define solo) |
@@ -150,10 +159,12 @@ echo "Tu API Key: $PROVEEDOR_API_KEY"
 
 | Usuario | Contraseña | Rol | Puede |
 |---|---|---|---|
-| `ana` | `Admin123!` | ADMIN | Ver el catálogo, crear y modificar productos |
-| `carlos` | `Cliente123!` | CLIENTE | Ver el catálogo y su perfil (si intenta modificar → **403**) |
+| `ana` | variable `ADMIN_PASSWORD` | ADMIN | Ver el catálogo, crear y modificar productos |
+| `carlos` | variable `CLIENTE_PASSWORD` | CLIENTE | Ver el catálogo y su perfil (si intenta modificar → **403**) |
 
-Las contraseñas se guardan como hash **BCrypt** (`$2a$10$...`). Los datos se cargan en memoria al arrancar y se reinician cada vez que el servidor se reinicia.
+**Las contraseñas no se publican en este repositorio.** Si estuvieran aquí, cualquiera podría entrar como ADMIN al servidor publicado. Las del servidor de Render las tiene el grupo: pídelas si necesitas probarlo. En local usas las que tú pongas en `application-local.yml`.
+
+Se guardan como hash **BCrypt** (`$2a$10$...`). Los datos se cargan en memoria al arrancar y se reinician cada vez que el servidor se reinicia.
 
 ---
 
@@ -196,7 +207,7 @@ Todos los errores tienen el mismo formato JSON, sin detalles internos del servid
 ```bash
 # Login -> copia el accessToken
 curl -X POST http://localhost:8080/auth/login -H "Content-Type: application/json" \
-     -d '{"usuario":"ana","password":"Admin123!"}'
+     -d '{"usuario":"ana","password":"PEGA_LA_CONTRASEÑA_DE_ANA"}'
 
 # Bearer Token
 curl -X PATCH http://localhost:8080/api/productos/2 -H "Content-Type: application/json" \
@@ -234,8 +245,13 @@ En la carpeta [`postman/`](postman/):
 **Importar:**
 1. En Postman: **Import** → arrastra los 3 archivos.
 2. Arriba a la derecha, elige el entorno **TechStore - Local**.
-3. Abre el entorno (ícono del ojo → *Edit*) y reemplaza `PEGAR_AQUI` en `apiKey` por tu API Key real.
-   **No guardes la key real en los archivos del repositorio.**
+3. Abre el entorno (menú **Environments** a la izquierda) y reemplaza cada `PEGAR_AQUI`:
+   - `apiKey`: la API Key del proveedor;
+   - `adminPassword`: la contraseña de ana;
+   - `clientePassword`: la contraseña de carlos.
+
+   Escríbelas en la columna **Current value** y guarda con `Ctrl+S`.
+   **No guardes los valores reales en los archivos del repositorio.**
 4. Ejecuta **2-Login › Login ana** y **Login carlos**. Sus scripts guardan los tokens solos en `{{token}}` y `{{tokenCliente}}`.
 5. Recorre las carpetas en orden:
 
@@ -255,7 +271,7 @@ También puedes ejecutar todo con **Run collection**: cada petición tiene su te
 
 Con el servidor encendido, abre **http://localhost:8080/swagger-ui.html**.
 
-1. Ejecuta `POST /auth/login` (**Try it out**) y copia el `accessToken`.
+1. Ejecuta `POST /auth/login` (**Try it out**) con `{"usuario": "ana", "password": "<contraseña de ana>"}` y copia el `accessToken`.
 2. Pulsa **Authorize** 🔒:
    - `bearerAuth`: pega **solo** el token (sin la palabra `Bearer`).
    - `apiKey`: pega la API Key del proveedor.
@@ -315,6 +331,8 @@ Funciones:
    |---|---|
    | `JWT_SECRET` | resultado de `openssl rand -base64 48 \| tr -d '\r\n'` |
    | `PROVEEDOR_API_KEY` | resultado de `openssl rand -hex 24 \| tr -d '\r\n'` |
+   | `ADMIN_PASSWORD` | contraseña de ana (elige una fuerte; compártela solo con el grupo y el docente) |
+   | `CLIENTE_PASSWORD` | contraseña de carlos |
    | `JWT_EXPIRACION_MINUTOS` | `15` *(opcional)* |
 
    No definas `PORT`: Render lo pone solo. `CORS_ORIGENES` ya incluye GitHub Pages por defecto.
@@ -375,6 +393,28 @@ BEARER_API/
 ├── postman/                         → colección y entornos de Postman
 └── README.md
 ```
+
+---
+
+## Pendientes y mejoras futuras
+
+Encontrados en la revisión de seguridad (Etapa 6). Para el taller son aceptables, pero se deben resolver antes de un uso real.
+
+**Para arreglar:**
+
+- [x] ~~**Contraseñas de prueba publicadas.**~~ **Resuelto:** ahora se leen de `ADMIN_PASSWORD` y `CLIENTE_PASSWORD`, y ya no aparecen en el código, el README ni Postman. Ojo: las antiguas siguen en el historial de Git, así que en Render hay que usar contraseñas **nuevas**.
+- [x] ~~**Precio demasiado grande → 500 en vez de 400.**~~ **Resuelto:** `@Digits(integer = 8, fraction = 2)` en `CrearProductoRequest` y `ActualizarProductoRequest`; ahora responde 400 con un mensaje claro.
+
+**Mejoras para producción:**
+
+- [ ] **Límite de intentos en `/auth/login`** (rate limiting), para frenar a quien pruebe contraseñas por fuerza bruta.
+- [ ] **Base de datos persistente** (ej. PostgreSQL). H2 en memoria pierde los datos en cada reinicio.
+- [ ] **Migrar a Spring Boot 4.x** (ver [Notas de versión](#notas-de-versión)).
+- [ ] **Revocar tokens / refresh tokens.** Hoy "Cerrar sesión" solo borra el token de la página; si alguien lo copió, sirve hasta que vence.
+- [ ] **Registro de auditoría:** quién cambió qué producto y cuándo.
+- [ ] **Rotar `JWT_SECRET` y `PROVEEDOR_API_KEY`** periódicamente o si se filtran.
+- [ ] **Swagger solo en desarrollo** (hoy es público a propósito, para la demo).
+- [ ] Detalles menores: el rechazo de CORS (403) y la ruta `/error` usan el formato de Spring y no el nuestro `{status, error, mensaje, ruta, timestamp}`.
 
 ---
 

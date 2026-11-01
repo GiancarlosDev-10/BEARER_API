@@ -3,6 +3,7 @@ package pe.techstore.api.dto;
 import java.math.BigDecimal;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
@@ -23,6 +24,8 @@ public record ActualizarProductoRequest(
         String nombre,
 
         @DecimalMin(value = "0.0", message = "El precio no puede ser negativo")
+        // Igual que en CrearProductoRequest: debe caber en la columna de la BD (precision 10, scale 2)
+        @Digits(integer = 8, fraction = 2, message = "El precio admite máximo 8 dígitos enteros y 2 decimales")
         BigDecimal precio,
 
         @PositiveOrZero(message = "El stock no puede ser negativo")

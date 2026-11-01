@@ -32,14 +32,17 @@ public class DatosIniciales {
     private final ProductoRepository productoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TechStoreProperties propiedades;
 
     // Spring nos "inyecta" estos objetos automáticamente por el constructor
     public DatosIniciales(ProductoRepository productoRepository,
                           UsuarioRepository usuarioRepository,
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          TechStoreProperties propiedades) {
         this.productoRepository = productoRepository;
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+        this.propiedades = propiedades;
     }
 
     @PostConstruct
@@ -53,12 +56,27 @@ public class DatosIniciales {
             return; // Ya hay datos, no duplicar
         }
 
+        // Las contraseñas vienen de variables de entorno (ADMIN_PASSWORD y CLIENTE_PASSWORD),
+        // no del código: así nadie que lea GitHub puede entrar como ADMIN.
+        String passwordAna = exigirPassword(propiedades.usuarios().adminPassword(), "ADMIN_PASSWORD");
+        String passwordCarlos = exigirPassword(propiedades.usuarios().clientePassword(), "CLIENTE_PASSWORD");
+
         // passwordEncoder.encode(...) convierte la contraseña en un hash BCrypt.
-        // En la base de datos queda algo como "$2a$10$...", nunca "Admin123!".
+        // En la base de datos queda algo como "$2a$10$...", nunca la contraseña real.
         usuarioRepository.saveAll(List.of(
-                new Usuario("ana", passwordEncoder.encode("Admin123!"), Rol.ADMIN),
-                new Usuario("carlos", passwordEncoder.encode("Cliente123!"), Rol.CLIENTE)
+                new Usuario("ana", passwordEncoder.encode(passwordAna), Rol.ADMIN),
+                new Usuario("carlos", passwordEncoder.encode(passwordCarlos), Rol.CLIENTE)
         ));
+    }
+
+    // Igual que con JWT_SECRET: si falta la contraseña o es muy corta, mejor no arrancar.
+    private String exigirPassword(String password, String variable) {
+        if (password == null || password.length() < 8) {
+            throw new IllegalStateException(
+                    "Falta la variable de entorno " + variable + " o tiene menos de 8 caracteres. "
+                    + "En local, ejecuta con el perfil 'local' (ver README).");
+        }
+        return password;
     }
 
     private void cargarProductos() {

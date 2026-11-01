@@ -26,7 +26,8 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
         title = "TechStore API",
         version = "1.0.0",
         description = "Taller API Keys vs. Bearer Tokens. "
-                + "Usuarios de prueba: ana / Admin123! (ADMIN) y carlos / Cliente123! (CLIENTE)."))
+                + "Usuarios de prueba: ana (ADMIN) y carlos (CLIENTE). "
+                + "Sus contraseñas no se publican: pídelas al grupo."))
 @SecurityScheme(
         name = "bearerAuth",
         type = SecuritySchemeType.HTTP,

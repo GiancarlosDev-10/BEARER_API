@@ -21,6 +21,12 @@ techstore:
     # Para generar una en Git Bash:   openssl rand -hex 24
     api-key: "CAMBIAR-por-otra-clave-aleatoria-de-32-caracteres-o-mas"
 
+  usuarios:
+    # Contraseñas de los usuarios de prueba ana (ADMIN) y carlos (CLIENTE). Mínimo 8 caracteres.
+    # Elige las tuyas; si trabajas en grupo, pónganse de acuerdo para usar las mismas.
+    admin-password: "CAMBIAR-contraseña-de-ana"
+    cliente-password: "CAMBIAR-contraseña-de-carlos"
+
 spring:
   h2:
     console:

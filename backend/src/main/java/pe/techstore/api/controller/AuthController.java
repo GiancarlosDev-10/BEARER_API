@@ -19,7 +19,7 @@ import pe.techstore.api.security.JwtService;
 /**
  * Login: cambia usuario + contraseña por un Bearer Token.
  *
- *   POST /auth/login   { "usuario": "ana", "password": "Admin123!" }
+ *   POST /auth/login   { "usuario": "ana", "password": "<contraseña de ana>" }
  *   -> 200 { accessToken, tokenType: "Bearer", expiraEnSegundos, usuario, rol }
  *   -> 401 si el usuario o la contraseña son incorrectos
  *

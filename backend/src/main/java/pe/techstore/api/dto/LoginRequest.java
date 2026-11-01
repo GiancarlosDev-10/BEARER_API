@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 /**
  * Datos que envía el cliente para iniciar sesión.
- * Ejemplo: { "usuario": "ana", "password": "Admin123!" }
+ * Ejemplo: { "usuario": "ana", "password": "<contraseña de ana>" }
  */
 public record LoginRequest(
 

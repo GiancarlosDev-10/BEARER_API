@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "5f71b83e-956b-5278-a017-3d926f8ceab8",
     "name": "TechStore API",
-    "description": "Taller **API Keys vs. Bearer Tokens** — TechStore.\n\n1. Elige el entorno **TechStore - Local** o **TechStore - Render** (arriba a la derecha).\n2. En el entorno, reemplaza `PEGAR_AQUI` por la API Key real del proveedor.\n3. Ejecuta **2-Login › Login ana** (y **Login carlos** para ver el 403).\n\nVariables: `{{baseUrl}}` y `{{apiKey}}` vienen del entorno; `{{token}}` y `{{tokenCliente}}` las llenan los logins automáticamente.",
+    "description": "Taller **API Keys vs. Bearer Tokens** — TechStore.\n\n1. Elige el entorno **TechStore - Local** o **TechStore - Render** (arriba a la derecha).\n2. En el entorno, reemplaza cada `PEGAR_AQUI`: `apiKey` (API Key del proveedor), `adminPassword` (contraseña de ana) y `clientePassword` (contraseña de carlos).\n3. Ejecuta **2-Login › Login ana** (y **Login carlos** para ver el 403).\n\nVariables: `{{baseUrl}}`, `{{apiKey}}`, `{{adminPassword}}` y `{{clientePassword}}` vienen del entorno; `{{token}}` y `{{tokenCliente}}` las llenan los logins automáticamente.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -170,7 +170,7 @@
             "description": "Inicia sesión como **ana** (rol ADMIN). El script de *Tests* guarda el `accessToken` en `{{token}}` para las demás peticiones. **Ejecútalo primero.**",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"usuario\": \"ana\",\n  \"password\": \"Admin123!\"\n}",
+              "raw": "{\n  \"usuario\": \"ana\",\n  \"password\": \"{{adminPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -217,7 +217,7 @@
             "description": "Inicia sesión como **carlos** (rol CLIENTE). Guarda su token en `{{tokenCliente}}` para mostrar el 403.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"usuario\": \"carlos\",\n  \"password\": \"Cliente123!\"\n}",
+              "raw": "{\n  \"usuario\": \"carlos\",\n  \"password\": \"{{clientePassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

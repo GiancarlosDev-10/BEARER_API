@@ -3,6 +3,7 @@ package pe.techstore.api.dto;
 import java.math.BigDecimal;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -24,6 +25,9 @@ public record CrearProductoRequest(
 
         @NotNull(message = "El precio es obligatorio")
         @DecimalMin(value = "0.0", message = "El precio no puede ser negativo")
+        // La columna de la BD es precision = 10, scale = 2: hasta 99 999 999.99.
+        // Sin esta regla, un precio más grande pasaba la validación y fallaba en la BD (error 500).
+        @Digits(integer = 8, fraction = 2, message = "El precio admite máximo 8 dígitos enteros y 2 decimales")
         BigDecimal precio,
 
         @NotNull(message = "El stock es obligatorio")

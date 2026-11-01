@@ -19,6 +19,9 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  *       api-key: ...              ->  propiedades.proveedor().apiKey()
  *     cors:
  *       origenes: a,b,c           ->  propiedades.cors().origenes()  (lista de 3 elementos)
+ *     usuarios:
+ *       admin-password: ...       ->  propiedades.usuarios().adminPassword()
+ *       cliente-password: ...     ->  propiedades.usuarios().clientePassword()
  *
  * Ventajas frente a usar @Value("${...}") en cada clase:
  *  - Toda la configuración está documentada en un único archivo.
@@ -32,9 +35,10 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param jwt       configuración de los tokens JWT (Bearer)
  * @param proveedor configuración de la API Key del sistema proveedor
  * @param cors      configuración de CORS (qué páginas web pueden llamar a la API)
+ * @param usuarios  contraseñas de los usuarios de prueba (ana y carlos)
  */
 @ConfigurationProperties(prefix = "techstore")
-public record TechStoreProperties(Jwt jwt, Proveedor proveedor, Cors cors) {
+public record TechStoreProperties(Jwt jwt, Proveedor proveedor, Cors cors, Usuarios usuarios) {
 
     /**
      * Propiedades "techstore.jwt.*".
@@ -67,5 +71,17 @@ public record TechStoreProperties(Jwt jwt, Proveedor proveedor, Cors cors) {
      *                 separadas por comas.
      */
     public record Cors(List<String> origenes) {
+    }
+
+    /**
+     * Propiedades "techstore.usuarios.*".
+     *
+     * Las contraseñas de los usuarios de prueba NO están escritas en el código ni en el README:
+     * si estuvieran, cualquiera que lea GitHub podría entrar como ADMIN en el servidor publicado.
+     *
+     * @param adminPassword   Contraseña de "ana" (rol ADMIN). Variable de entorno ADMIN_PASSWORD.
+     * @param clientePassword Contraseña de "carlos" (rol CLIENTE). Variable de entorno CLIENTE_PASSWORD.
+     */
+    public record Usuarios(String adminPassword, String clientePassword) {
     }
 }
