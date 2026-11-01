@@ -1,461 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TechStore · Panel de administración</title>
+  <title>TechStore · Panel de precios</title>
 
-  <!-- Bootstrap 5 desde CDN. "integrity" (SRI) hace que el navegador verifique que el
+  <!-- Bootstrap 5 desde CDN. "integrity" (SRI) hace que el navegador compruebe que el
        archivo no fue modificado: si alguien lo altera en el CDN, no se carga. -->
   <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
         crossorigin="anonymous">
 
-  <style>
-    body { background: #f4f6fb; }
-    .card { border: 0; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
-    pre.peticion { background: #1e1e2e; color: #cdd6f4; border-radius: .5rem; padding: 1rem;
-                   font-size: .82rem; white-space: pre-wrap; word-break: break-all; margin: 0; }
-    .valor-null { color: #dc3545; font-style: italic; }
-  </style>
+  <!-- Toda la lógica está en app.js. "defer" = se ejecuta cuando el HTML ya está cargado. -->
+  <script src="app.js" defer></script>
 </head>
-<body>
+<body class="bg-light">
+  <div class="container py-4" style="max-width: 1140px">
 
-<!-- ===================== Barra superior ===================== -->
-<nav class="navbar navbar-dark bg-dark mb-4">
-  <div class="container">
-    <span class="navbar-brand fw-semibold">🛒 TechStore · Panel de administración</span>
-    <span class="navbar-text small" id="textoApiUrl"></span>
-  </div>
-</nav>
-
-<main class="container pb-5">
-
-  <!-- ===================== Estado del servidor ===================== -->
-  <div class="alert alert-warning d-flex align-items-center gap-3" id="estadoServidor">
-    <div class="spinner-border spinner-border-sm" role="status"></div>
-    <div>
-      <strong>Despertando servidor…</strong>
-      <span id="textoEspera" class="small"></span><br>
-      <span class="small">El plan gratuito de Render "duerme" el servidor sin uso; el primer arranque puede tardar hasta 1 minuto.</span>
-    </div>
-  </div>
-
-  <!-- Aquí aparecen los resultados de cada petición (verde = éxito, rojo = error) -->
-  <div id="zonaAlertas"></div>
-
-  <div class="row g-4">
-
-    <!-- ===================== Columna izquierda: sesión ===================== -->
-    <div class="col-lg-5">
-
-      <!-- Formulario de login (visible cuando NO hay sesión) -->
-      <div class="card" id="tarjetaLogin">
-        <div class="card-body">
-          <h5 class="card-title">1. Iniciar sesión</h5>
-          <p class="small text-muted">El servidor devuelve un <strong>Bearer Token</strong> (JWT) que se guarda solo en memoria.</p>
-          <form id="formLogin">
-            <div class="mb-2">
-              <label class="form-label" for="usuario">Usuario</label>
-              <input class="form-control" id="usuario" autocomplete="username" required>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="password">Contraseña</label>
-              <input class="form-control" id="password" type="password" autocomplete="current-password" required>
-            </div>
-            <button class="btn btn-primary w-100 requiere-servidor" type="submit" disabled>Entrar</button>
-          </form>
-          <div class="mt-3 small">
-            Usuarios de prueba:
-            <button class="btn btn-link btn-sm p-0 align-baseline" data-usuario="ana" data-password="Admin123!">ana (ADMIN)</button> ·
-            <button class="btn btn-link btn-sm p-0 align-baseline" data-usuario="carlos" data-password="Cliente123!">carlos (CLIENTE)</button>
-          </div>
-        </div>
+    <!-- ===== Encabezado: título a la izquierda, estado del servidor a la derecha ===== -->
+    <header class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+      <div>
+        <h1 class="h3 mb-1">TechStore · Panel de precios</h1>
+        <p class="text-muted mb-0">
+          Login con Bearer Token + PATCH a un endpoint protegido
+          <span class="small">· <span id="textoApiUrl"></span></span>
+        </p>
       </div>
 
-      <!-- Datos de la sesión (visible cuando SÍ hay sesión) -->
-      <div class="card d-none" id="tarjetaSesion">
-        <div class="card-body">
-          <h5 class="card-title">Sesión activa</h5>
-          <p class="mb-1">Usuario: <strong id="sesionUsuario"></strong>
-            <span class="badge" id="sesionRol"></span></p>
-          <p class="mb-1">El token vence en: <strong id="sesionRestante"></strong></p>
-          <p class="small text-muted mb-3">Token: <code id="sesionToken"></code></p>
-          <button class="btn btn-outline-secondary btn-sm" id="botonSalir">Cerrar sesión</button>
-        </div>
+      <!-- Estado del servidor (Render "duerme" si no se usa). app.js cambia su color. -->
+      <div id="estadoServidor" class="alert alert-warning py-2 px-3 mb-0 small d-flex align-items-center gap-2" role="status">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span><strong>Despertando servidor…</strong> <span id="textoEspera"></span></span>
       </div>
+    </header>
 
-      <!-- Nota didáctica sobre la API Key -->
-      <div class="card mt-4">
-        <div class="card-body small">
-          <h6 class="card-title">¿Y la API Key del proveedor?</h6>
-          No está en esta página, a propósito. Todo lo que llega al navegador (HTML, JavaScript)
-          puede verlo cualquier persona con <kbd>F12</kbd>. La API Key es para comunicación
-          <strong>servidor a servidor</strong>; pruébala con Postman o Swagger.
-        </div>
-      </div>
-    </div>
+    <div class="row g-4">
 
-    <!-- ===================== Columna derecha: actualizar precio ===================== -->
-    <div class="col-lg-7">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">2. Actualizar precio <span class="badge text-bg-secondary">PATCH</span></h5>
-          <p class="small text-muted">Requiere Bearer Token con rol ADMIN. Prueba los 3 casos: con ana (200), con carlos (403) y sin token (401).</p>
-          <form id="formPrecio" class="row g-2 align-items-end">
+      <!-- ================= Columna izquierda: login + PATCH ================= -->
+      <div class="col-lg-6 d-flex flex-column gap-4">
+
+        <!-- ===== 1. Login ===== -->
+        <form id="formLogin" class="card card-body shadow-sm">
+          <h2 class="h5">1. Iniciar sesión</h2>
+          <p class="small text-muted">El servidor devuelve un Bearer Token (JWT). Se guarda solo en memoria.</p>
+          <div class="row g-2 mb-3">
             <div class="col-sm-6">
-              <label class="form-label" for="selectProducto">Producto</label>
-              <select class="form-select" id="selectProducto" required></select>
+              <label for="usuario" class="form-label">Usuario</label>
+              <input id="usuario" class="form-control" autocomplete="username" required>
             </div>
-            <div class="col-sm-3">
-              <label class="form-label" for="nuevoPrecio">Nuevo precio</label>
-              <input class="form-control" id="nuevoPrecio" type="number" step="0.01" min="0" required>
-            </div>
-            <div class="col-sm-3">
-              <button class="btn btn-success w-100 requiere-servidor" type="submit" disabled>Actualizar</button>
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="sinToken">
-                <label class="form-check-label" for="sinToken">Enviar <strong>SIN token</strong> (para ver el 401)</label>
+            <div class="col-sm-6">
+              <label for="password" class="form-label">Contraseña</label>
+              <!-- input-group: pega el botón del "ojito" al campo de contraseña -->
+              <div class="input-group">
+                <input id="password" type="password" class="form-control" autocomplete="current-password" required>
+                <button id="botonVerPassword" class="btn btn-outline-secondary" type="button"
+                        aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                  <!-- Ojo abierto: se ve mientras la contraseña está oculta -->
+                  <svg id="iconoOjo" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.17 8a13 13 0 0 1 1.66-2.04C4.12 4.67 5.88 3.5 8 3.5s3.88 1.17 5.17 2.46A13 13 0 0 1 14.83 8q-.09.13-.2.28c-.33.47-.8 1.1-1.46 1.76C11.88 11.33 10.12 12.5 8 12.5s-3.88-1.17-5.17-2.46A13 13 0 0 1 1.17 8"/>
+                    <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+                  </svg>
+                  <!-- Ojo tachado: se ve mientras la contraseña está visible -->
+                  <svg id="iconoOjoTachado" class="d-none" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                    <path d="M13.36 11.24C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7 7 0 0 0-2.79.59l.77.77A6 6 0 0 1 8 3.5c2.12 0 3.88 1.17 5.17 2.46A13 13 0 0 1 14.83 8q-.09.13-.2.28c-.33.47-.8 1.1-1.46 1.76q-.18.18-.37.35z"/>
+                    <path d="M11.3 9.18a3.5 3.5 0 0 0-4.47-4.47l.82.82a2.5 2.5 0 0 1 2.83 2.83zm-2.94 1.29.82.82a3.5 3.5 0 0 1-4.47-4.47l.82.82a2.5 2.5 0 0 0 2.83 2.83"/>
+                    <path d="M3.35 5.47q-.27.24-.52.5A13 13 0 0 0 1.17 8l.2.28c.33.47.8 1.1 1.46 1.76C4.12 11.33 5.88 12.5 8 12.5c.72 0 1.4-.13 2.02-.36l.77.78A7 7 0 0 1 8 13.5C3 13.5 0 8 0 8s.94-1.73 2.64-3.24l.7.7zm10.3 8.89-12-12 .7-.7 12 12z"/>
+                  </svg>
+                </button>
               </div>
             </div>
-          </form>
+          </div>
+          <button class="btn btn-primary requiere-servidor" type="submit" disabled>Iniciar sesión</button>
+        </form>
 
-          <h6 class="mt-4">Última petición enviada</h6>
-          <pre class="peticion" id="ultimaPeticion">(todavía ninguna)</pre>
+        <!-- ===== Sesión activa (reemplaza al login) ===== -->
+        <div id="tarjetaSesion" class="card card-body shadow-sm d-none">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h2 class="h5 mb-1">1. Sesión activa</h2>
+              <p class="mb-1">Usuario: <strong id="sesionUsuario"></strong> <span id="sesionRol" class="badge"></span></p>
+              <p class="mb-0">El token vence en: <strong id="sesionRestante"></strong></p>
+            </div>
+            <button id="botonSalir" class="btn btn-outline-secondary btn-sm" type="button">Cerrar sesión</button>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ===================== Catálogo ===================== -->
-    <div class="col-12">
-      <div class="card">
-        <div class="card-body">
+        <!-- ===== 2. Actualizar precio (PATCH) ===== -->
+        <form id="formPrecio" class="card card-body shadow-sm">
+          <h2 class="h5">2. Actualizar precio <span class="badge text-bg-secondary">PATCH</span></h2>
+          <p class="small text-muted">Requiere rol ADMIN. Con un CLIENTE responde 403; sin token, 401.</p>
+          <div class="row g-2 mb-3">
+            <div class="col-sm-8">
+              <label for="selectProducto" class="form-label">Producto</label>
+              <select id="selectProducto" class="form-select" required></select>
+            </div>
+            <div class="col-sm-4">
+              <label for="nuevoPrecio" class="form-label">Nuevo precio (S/)</label>
+              <input id="nuevoPrecio" type="number" class="form-control" step="0.01" min="0" required>
+            </div>
+          </div>
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="form-check mb-0">
+              <input id="sinToken" type="checkbox" class="form-check-input">
+              <label for="sinToken" class="form-check-label">Enviar SIN token (para ver el 401)</label>
+            </div>
+            <button class="btn btn-primary requiere-servidor" type="submit" disabled>Actualizar precio (PATCH)</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ================= Columna derecha: resultado + catálogo ================= -->
+      <div class="col-lg-6 d-flex flex-column gap-3">
+
+        <!-- Resultado de cada petición: verde (éxito), rojo (error), gris (enviando) -->
+        <div id="resultado"></div>
+
+        <!-- ===== 3. Catálogo (público) ===== -->
+        <div class="card card-body shadow-sm">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="card-title mb-0">Catálogo <span class="badge text-bg-secondary">GET · público</span></h5>
-            <button class="btn btn-outline-primary btn-sm requiere-servidor" id="botonRecargar" disabled>Recargar</button>
+            <h2 class="h5 mb-0">Catálogo <span class="badge text-bg-secondary">GET · público</span></h2>
+            <button id="botonRecargar" class="btn btn-outline-primary btn-sm requiere-servidor" type="button" disabled>Recargar</button>
           </div>
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-              <thead><tr><th>ID</th><th>Nombre</th><th class="text-end">Precio</th><th class="text-end">Stock</th><th>Categoría</th></tr></thead>
-              <tbody id="tablaProductos"><tr><td colspan="5" class="text-muted">Esperando al servidor…</td></tr></tbody>
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead>
+                <tr><th>ID</th><th>Nombre</th><th class="text-end">Precio</th><th class="text-end">Stock</th></tr>
+              </thead>
+              <tbody id="tablaProductos">
+                <tr><td colspan="4" class="text-muted">Esperando al servidor…</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
+
+        <!-- Detalle técnico de la última petición (útil para la exposición) -->
+        <details>
+          <summary class="small text-muted">Ver la última petición enviada</summary>
+          <pre id="ultimaPeticion" class="bg-dark text-light rounded p-3 mt-2 small mb-0"
+               style="white-space: pre-wrap; word-break: break-all">(todavía ninguna)</pre>
+        </details>
       </div>
     </div>
 
+    <p class="small text-muted mt-4 mb-0">
+      ¿Y la API Key del proveedor? No está en esta página, a propósito: todo lo que llega al navegador
+      se puede ver con F12. La API Key es para comunicación servidor a servidor (pruébala con Postman o Swagger).
+    </p>
   </div>
-</main>
-
-<script>
-  /*
-   * ============================================================
-   *  IMPORTANTE: esta página NUNCA contiene la API Key del proveedor.
-   *
-   *  Todo el código de un frontend (este archivo incluido) se descarga
-   *  al navegador del visitante: cualquiera puede leerlo con F12 o
-   *  "Ver código fuente". Si pusiéramos aquí la API Key, cualquiera
-   *  podría copiarla y modificar el stock de TechStore.
-   *
-   *  Por eso: el usuario humano usa un Bearer Token (personal, con rol
-   *  y que vence en minutos), y la API Key solo vive en servidores.
-   *  Es justamente la lección de esta tarea.
-   * ============================================================
-   */
-
-  // ---------- Configuración ----------
-  // URL del backend publicado en Render. ¡Cámbiala por la de tu servicio!
-  const URL_RENDER = "https://techstore-api.onrender.com";
-
-  // Si la página se abre en tu computadora, usa el backend local; si no, el de Render.
-  const ES_LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
-  const API_URL = ES_LOCAL ? "http://localhost:8080" : URL_RENDER;
-
-  const REINTENTO_MS = 5000;          // reintentar cada 5 segundos
-  const ESPERA_MAXIMA_MS = 120000;    // durante 2 minutos como máximo
-
-  // ---------- Estado de la página ----------
-  // El token se guarda SOLO en esta variable (memoria). No usamos localStorage:
-  // ahí cualquier script malicioso inyectado en la página podría robarlo.
-  // Contra: al recargar la página, hay que volver a iniciar sesión.
-  let token = null;
-  let venceEn = null;          // momento (en milisegundos) en que vence el token
-  let temporizador = null;     // reloj que actualiza el tiempo restante
-
-  // Atajo para buscar elementos por id
-  const $ = (id) => document.getElementById(id);
-
-  // ============================================================
-  //  Función central: llamar a la API
-  // ============================================================
-  async function llamarApi(metodo, ruta, cuerpo = null, { enviarToken = true } = {}) {
-    const headers = {};
-    if (cuerpo) headers["Content-Type"] = "application/json";
-    // Así se envía un Bearer Token: en el header Authorization
-    if (enviarToken && token) headers["Authorization"] = "Bearer " + token;
-
-    mostrarPeticion(metodo, ruta, headers, cuerpo);
-
-    const respuesta = await fetch(API_URL + ruta, {
-      method: metodo,
-      headers: headers,
-      body: cuerpo ? JSON.stringify(cuerpo) : undefined
-    });
-
-    let datos = null;
-    try { datos = await respuesta.json(); } catch { /* respuesta sin JSON */ }
-    return { status: respuesta.status, ok: respuesta.ok, datos: datos };
-  }
-
-  // Muestra en pantalla qué se envió (el token se acorta para que se lea mejor)
-  function mostrarPeticion(metodo, ruta, headers, cuerpo) {
-    let texto = metodo + " " + API_URL + ruta + "\n";
-    for (const [nombre, valor] of Object.entries(headers)) {
-      const visible = nombre === "Authorization"
-        ? valor.slice(0, 27) + "…  (" + (valor.length - 7) + " caracteres)"
-        : valor;
-      texto += nombre + ": " + visible + "\n";
-    }
-    if (!headers["Authorization"] && ruta.startsWith("/api/productos/")) {
-      texto += "(sin header Authorization)\n";
-    }
-    if (cuerpo) texto += "\n" + JSON.stringify(cuerpo, null, 2);
-    $("ultimaPeticion").textContent = texto;
-  }
-
-  // ============================================================
-  //  Alertas verde / roja
-  // ============================================================
-  function mostrarAlerta(exito, titulo, detalle) {
-    const alerta = document.createElement("div");
-    alerta.className = "alert alert-dismissible " + (exito ? "alert-success" : "alert-danger");
-
-    const fuerte = document.createElement("strong");
-    fuerte.textContent = titulo;
-    alerta.appendChild(fuerte);
-    alerta.appendChild(document.createTextNode(" " + detalle));
-
-    const cerrar = document.createElement("button");
-    cerrar.type = "button";
-    cerrar.className = "btn-close";
-    cerrar.setAttribute("aria-label", "Cerrar");
-    cerrar.onclick = () => alerta.remove();
-    alerta.appendChild(cerrar);
-
-    $("zonaAlertas").replaceChildren(alerta);
-  }
-
-  // Alerta a partir de una respuesta de error de la API: { status, error, mensaje, ... }
-  function alertaDeError(r) {
-    const d = r.datos || {};
-    mostrarAlerta(false, r.status + " " + (d.error || "Error"), d.mensaje || "Sin detalle");
-  }
-
-  function alertaSinConexion() {
-    mostrarAlerta(false, "Sin conexión", "No se pudo contactar al servidor (¿está encendido? ¿CORS?).");
-  }
-
-  // ============================================================
-  //  1) Despertar el servidor
-  // ============================================================
-  async function despertarServidor() {
-    const inicio = Date.now();
-
-    while (Date.now() - inicio < ESPERA_MAXIMA_MS) {
-      try {
-        // Cada intento espera como máximo 10 s una respuesta
-        const r = await fetch(API_URL + "/api/public/estado", { signal: AbortSignal.timeout(10000) });
-        if (r.ok) {
-          servidorListo();
-          return;
-        }
-      } catch { /* todavía dormido: reintentamos */ }
-
-      const segundos = Math.round((Date.now() - inicio) / 1000);
-      $("textoEspera").textContent = "(" + segundos + " s, reintentando cada 5 s)";
-      await new Promise((ok) => setTimeout(ok, REINTENTO_MS));
-    }
-
-    // Pasaron 2 minutos sin respuesta
-    const estado = $("estadoServidor");
-    estado.className = "alert alert-danger";
-    estado.textContent = "El servidor no respondió en 2 minutos. ";
-    const reintentar = document.createElement("button");
-    reintentar.className = "btn btn-sm btn-light";
-    reintentar.textContent = "Reintentar";
-    reintentar.onclick = () => location.reload();
-    estado.appendChild(reintentar);
-  }
-
-  function servidorListo() {
-    const estado = $("estadoServidor");
-    estado.className = "alert alert-success";
-    estado.textContent = "✓ Servidor activo";
-    document.querySelectorAll(".requiere-servidor").forEach((b) => (b.disabled = false));
-    cargarCatalogo();
-  }
-
-  // ============================================================
-  //  2) Catálogo (GET público)
-  // ============================================================
-  async function cargarCatalogo() {
-    try {
-      const r = await fetch(API_URL + "/api/productos");
-      const productos = await r.json();
-      dibujarTabla(productos);
-      llenarSelect(productos);
-    } catch {
-      alertaSinConexion();
-    }
-  }
-
-  // Un campo en null (por ejemplo, tras el "caso de Ana" con PUT) se muestra en rojo
-  function celda(valor, alinearDerecha = false, formato = (v) => v) {
-    const td = document.createElement("td");
-    if (alinearDerecha) td.className = "text-end";
-    if (valor === null || valor === undefined) {
-      td.innerHTML = '<span class="valor-null">null</span>';
-    } else {
-      td.textContent = formato(valor);   // textContent: nunca interpreta HTML (evita XSS)
-    }
-    return td;
-  }
-
-  function dibujarTabla(productos) {
-    const filas = productos.map((p) => {
-      const tr = document.createElement("tr");
-      tr.append(
-        celda(p.id),
-        celda(p.nombre),
-        celda(p.precio, true, (v) => "S/ " + Number(v).toFixed(2)),
-        celda(p.stock, true),
-        celda(p.categoria)
-      );
-      return tr;
-    });
-    $("tablaProductos").replaceChildren(...filas);
-  }
-
-  function llenarSelect(productos) {
-    const select = $("selectProducto");
-    const elegido = select.value;
-    select.replaceChildren(...productos.map((p) => {
-      const op = document.createElement("option");
-      op.value = p.id;
-      op.textContent = p.id + " · " + (p.nombre ?? "(sin nombre)");
-      return op;
-    }));
-    if (elegido) select.value = elegido;
-  }
-
-  // ============================================================
-  //  3) Login → Bearer Token
-  // ============================================================
-  async function iniciarSesion(evento) {
-    evento.preventDefault();
-    const cuerpo = { usuario: $("usuario").value.trim(), password: $("password").value };
-
-    try {
-      const r = await llamarApi("POST", "/auth/login", cuerpo, { enviarToken: false });
-      // No mostramos la contraseña en "Última petición"
-      $("ultimaPeticion").textContent = $("ultimaPeticion").textContent
-        .replace(/"password": ".*"/, '"password": "********"');
-
-      if (!r.ok) {
-        alertaDeError(r);
-        return;
-      }
-
-      token = r.datos.accessToken;
-      venceEn = Date.now() + r.datos.expiraEnSegundos * 1000;
-      $("password").value = "";
-      mostrarSesion(r.datos.usuario, r.datos.rol);
-      mostrarAlerta(true, "200 OK", "Bienvenido/a " + r.datos.usuario + ". Token recibido (" + r.datos.tokenType + ").");
-    } catch {
-      alertaSinConexion();
-    }
-  }
-
-  function mostrarSesion(usuario, rol) {
-    $("sesionUsuario").textContent = usuario;
-    $("sesionRol").textContent = rol;
-    $("sesionRol").className = "badge " + (rol === "ADMIN" ? "text-bg-primary" : "text-bg-info");
-    $("sesionToken").textContent = token.slice(0, 20) + "…";
-    $("tarjetaLogin").classList.add("d-none");
-    $("tarjetaSesion").classList.remove("d-none");
-
-    clearInterval(temporizador);
-    actualizarRestante();
-    temporizador = setInterval(actualizarRestante, 1000);
-  }
-
-  // Cuenta regresiva. Al llegar a 0 NO borramos el token: así se puede ver el 401 "token vencido".
-  function actualizarRestante() {
-    const ms = venceEn - Date.now();
-    if (ms <= 0) {
-      $("sesionRestante").textContent = "VENCIDO (el servidor responderá 401)";
-      $("sesionRestante").className = "text-danger";
-      clearInterval(temporizador);
-      return;
-    }
-    const min = Math.floor(ms / 60000);
-    const seg = Math.floor((ms % 60000) / 1000);
-    $("sesionRestante").textContent = min + " min " + String(seg).padStart(2, "0") + " s";
-    $("sesionRestante").className = "";
-  }
-
-  function cerrarSesion() {
-    token = null;
-    venceEn = null;
-    clearInterval(temporizador);
-    $("tarjetaSesion").classList.add("d-none");
-    $("tarjetaLogin").classList.remove("d-none");
-    mostrarAlerta(true, "Sesión cerrada", "El token se borró de la memoria de la página.");
-  }
-
-  // ============================================================
-  //  4) Actualizar precio (PATCH protegido)
-  // ============================================================
-  async function actualizarPrecio(evento) {
-    evento.preventDefault();
-    const id = $("selectProducto").value;
-    const precio = Number($("nuevoPrecio").value);
-    const enviarToken = !$("sinToken").checked;
-
-    try {
-      const r = await llamarApi("PATCH", "/api/productos/" + id, { precio: precio }, { enviarToken });
-      if (r.ok) {
-        mostrarAlerta(true, r.status + " OK", "Precio de \"" + r.datos.nombre + "\" actualizado a S/ " + Number(r.datos.precio).toFixed(2) + ".");
-        cargarCatalogo();
-      } else {
-        alertaDeError(r);   // 401 (sin token / vencido) o 403 (rol CLIENTE)
-      }
-    } catch {
-      alertaSinConexion();
-    }
-  }
-
-  // ============================================================
-  //  Arranque de la página
-  // ============================================================
-  $("textoApiUrl").textContent = "API: " + API_URL;
-  $("formLogin").addEventListener("submit", iniciarSesion);
-  $("formPrecio").addEventListener("submit", actualizarPrecio);
-  $("botonSalir").addEventListener("click", cerrarSesion);
-  $("botonRecargar").addEventListener("click", cargarCatalogo);
-
-  // Botones que rellenan usuario y contraseña de prueba
-  document.querySelectorAll("[data-usuario]").forEach((boton) => {
-    boton.addEventListener("click", () => {
-      $("usuario").value = boton.dataset.usuario;
-      $("password").value = boton.dataset.password;
-    });
-  });
-
-  despertarServidor();
-</script>
 </body>
 </html>

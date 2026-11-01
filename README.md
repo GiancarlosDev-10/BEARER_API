@@ -265,14 +265,19 @@ Con el servidor encendido, abre **http://localhost:8080/swagger-ui.html**.
 
 ## Frontend
 
-[`docs/index.html`](docs/index.html) es un panel de una sola página (HTML + Bootstrap 5 + JavaScript, sin instalar nada):
+Panel de una sola página basado en el demo de clase (Bootstrap 5, tarjeta centrada, alertas verde/roja), sin instalar nada:
+
+- [`docs/index.html`](docs/index.html): la **estructura** (formularios, tabla, alertas).
+- [`docs/app.js`](docs/app.js): la **lógica** (llamadas a la API, token, alertas). Los textos que vienen del servidor se muestran con `textContent`, nunca con `innerHTML`, para evitar inyección de HTML (XSS).
+
+Funciones:
 
 - Al abrirse, **despierta el servidor**: llama a `/api/public/estado` cada 5 s, hasta 2 minutos.
 - **Login**: el token se guarda **solo en memoria** (una variable de JavaScript, no `localStorage`) y se muestra una cuenta regresiva hasta que vence.
 - **Catálogo** (GET público).
 - **Actualizar precio** (PATCH): con ana → 200 · con carlos → 403 · con la casilla "Enviar SIN token" → 401.
 - Muestra la **última petición enviada** (método, URL y headers), para ver el `Authorization: Bearer ...`.
-- **No contiene la API Key del proveedor**: todo lo que llega al navegador es visible con F12.
+- **No contiene la API Key del proveedor ni usuarios o contraseñas**: todo lo que llega al navegador es visible con F12.
 
 **En local:** abre `docs/index.html` con **Live Server** de VS Code (clic derecho → *Open with Live Server*). Queda en `http://127.0.0.1:5500`, que está autorizado en CORS. La página detecta que estás en tu computadora y usa `http://localhost:8080`.
 
@@ -319,7 +324,7 @@ Con el servidor encendido, abre **http://localhost:8080/swagger-ui.html**.
 6. **Create Web Service**. El primer build tarda ~5-10 min. Cuando diga **Live**, prueba:
    `https://TU-SERVICIO.onrender.com/api/public/estado`
 7. Actualiza la URL en dos lugares:
-   - `docs/index.html` → constante `URL_RENDER`.
+   - `docs/app.js` → constante `URL_RENDER` (al inicio del archivo).
    - Postman → entorno **TechStore - Render** → `baseUrl` (y `apiKey`, solo en tu Postman).
 
 ### 2. Frontend en GitHub Pages
@@ -364,7 +369,9 @@ BEARER_API/
 │       └── resources/
 │           ├── application.yml                 → configuración (lee variables de entorno)
 │           └── application-local.example.yml   → plantilla para tu configuración local
-├── docs/index.html                  → panel web (GitHub Pages)
+├── docs/                            → panel web (GitHub Pages)
+│   ├── index.html                   → estructura de la página
+│   └── app.js                       → lógica: login, token en memoria, PATCH, catálogo
 ├── postman/                         → colección y entornos de Postman
 └── README.md
 ```
