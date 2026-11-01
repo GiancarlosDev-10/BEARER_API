@@ -24,8 +24,9 @@ import pe.techstore.api.dto.ErrorResponse;
  * Así el cliente nunca recibe un "stack trace" (el detalle técnico interno
  * del error), que podría revelar información útil para un atacante.
  *
- * Nota: los errores 401 y 403 de seguridad NO pasan por aquí, porque ocurren
- * antes de llegar al controlador. Esos se configuran en la Etapa 3.
+ * Nota: los errores 401 (falta token) y 403 (sin permiso) NO pasan por aquí, porque
+ * ocurren en los filtros de seguridad, antes de llegar al controlador.
+ * Esos se manejan en security/ErroresSeguridadHandler.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -36,6 +37,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<ErrorResponse> noEncontrado(RecursoNoEncontradoException ex, HttpServletRequest req) {
         return responder(HttpStatus.NOT_FOUND, ex.getMessage(), req);
+    }
+
+    // 401: login con usuario o contraseña incorrectos
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<ErrorResponse> credencialesInvalidas(CredencialesInvalidasException ex, HttpServletRequest req) {
+        return responder(HttpStatus.UNAUTHORIZED, ex.getMessage(), req);
     }
 
     // 404: la ruta no existe (ej. /api/no-existe)

@@ -3,32 +3,67 @@ package pe.techstore.api.config;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
 import pe.techstore.api.model.Producto;
+import pe.techstore.api.model.Rol;
+import pe.techstore.api.model.Usuario;
 import pe.techstore.api.repository.ProductoRepository;
+import pe.techstore.api.repository.UsuarioRepository;
 
 /**
  * Carga datos de ejemplo cada vez que arranca el servidor.
  *
- * CommandLineRunner = Spring ejecuta el método run() una vez, al terminar de arrancar.
  * Como la base H2 vive en memoria, empieza vacía en cada arranque.
+ *
+ * @PostConstruct = Spring ejecuta cargarDatos() apenas crea este objeto, DURANTE el arranque
+ * y ANTES de que el servidor empiece a aceptar peticiones en el puerto 8080.
+ *
+ * ¿Por qué no CommandLineRunner? Porque se ejecuta DESPUÉS de abrir el puerto: durante
+ * unos milisegundos (lo que tarda BCrypt) la tabla de usuarios estaría vacía y un login
+ * inmediato respondería 401 aunque la contraseña fuera correcta. Pasa justo cuando Render
+ * "despierta" el servidor y alguien inicia sesión en seguida.
  */
 @Component
-public class DatosIniciales implements CommandLineRunner {
+public class DatosIniciales {
 
     private final ProductoRepository productoRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // Spring nos "inyecta" el repositorio automáticamente por el constructor
-    public DatosIniciales(ProductoRepository productoRepository) {
+    // Spring nos "inyecta" estos objetos automáticamente por el constructor
+    public DatosIniciales(ProductoRepository productoRepository,
+                          UsuarioRepository usuarioRepository,
+                          PasswordEncoder passwordEncoder) {
         this.productoRepository = productoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @Override
-    public void run(String... args) {
-        if (productoRepository.count() > 0) {
+    @PostConstruct
+    public void cargarDatos() {
+        cargarUsuarios();
+        cargarProductos();
+    }
+
+    private void cargarUsuarios() {
+        if (usuarioRepository.count() > 0) {
             return; // Ya hay datos, no duplicar
+        }
+
+        // passwordEncoder.encode(...) convierte la contraseña en un hash BCrypt.
+        // En la base de datos queda algo como "$2a$10$...", nunca "Admin123!".
+        usuarioRepository.saveAll(List.of(
+                new Usuario("ana", passwordEncoder.encode("Admin123!"), Rol.ADMIN),
+                new Usuario("carlos", passwordEncoder.encode("Cliente123!"), Rol.CLIENTE)
+        ));
+    }
+
+    private void cargarProductos() {
+        if (productoRepository.count() > 0) {
+            return;
         }
 
         productoRepository.saveAll(List.of(

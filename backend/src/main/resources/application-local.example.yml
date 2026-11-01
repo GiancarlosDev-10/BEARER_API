@@ -1,0 +1,29 @@
+# =====================================================================
+#  PLANTILLA DEL PERFIL LOCAL (este archivo SÍ se sube a GitHub)
+#
+#  Cómo usarla:
+#   1. Copia este archivo con el nombre  application-local.yml  (misma carpeta).
+#   2. Reemplaza los valores de ejemplo por los tuyos.
+#      Para generar una clave aleatoria en Git Bash:   openssl rand -base64 48
+#   3. Ejecuta desde la carpeta backend:
+#        ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+#
+#  application-local.yml está en .gitignore: tus claves reales nunca se suben.
+# =====================================================================
+
+techstore:
+  jwt:
+    # Mínimo 32 caracteres. ¡Cámbiala!
+    secret: "CAMBIAR-por-una-clave-aleatoria-de-al-menos-32-caracteres"
+
+  proveedor:
+    # API Key del sistema proveedor. Mínimo 32 caracteres. ¡Cámbiala!
+    # Para generar una en Git Bash:   openssl rand -hex 24
+    api-key: "CAMBIAR-por-otra-clave-aleatoria-de-32-caracteres-o-mas"
+
+spring:
+  h2:
+    console:
+      # Consola web de H2 en http://localhost:8080/h2-console (solo en local)
+      # JDBC URL: jdbc:h2:mem:techstore   Usuario: sa   Contraseña: (vacía)
+      enabled: true

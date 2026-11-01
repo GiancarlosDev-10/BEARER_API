@@ -31,3 +31,34 @@ server:
   error:
     # Nunca enviar el stack trace (detalle interno del error) al cliente.
     include-stacktrace: never
+  # En Render, el tráfico llega por HTTPS a un "proxy" que luego llama a nuestra app por HTTP.
+  # Con esto, Spring respeta los headers X-Forwarded-* y genera URLs https:// correctas
+  # (en el header Location del POST y en Swagger).
+  forward-headers-strategy: framework
+
+# ===== Swagger UI (documentación interactiva de la API) =====
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    # Recordar el token / API Key escrito en "Authorize" al recargar la página
+    persist-authorization: true
+
+# ===== Configuración propia de TechStore =====
+techstore:
+  jwt:
+    # Clave secreta para FIRMAR los tokens. Se lee de la variable de entorno JWT_SECRET.
+    # NO tiene valor por defecto a propósito: si falta, el servidor no arranca.
+    # En local se define en application-local.yml (que no se sube a GitHub).
+    secret: ${JWT_SECRET:}
+    # Cuántos minutos dura un token antes de vencer.
+    expiracion-minutos: ${JWT_EXPIRACION_MINUTOS:15}
+
+  proveedor:
+    # API Key del sistema proveedor (servidor a servidor). Variable de entorno PROVEEDOR_API_KEY.
+    # Tampoco tiene valor por defecto: si falta, el servidor no arranca.
+    api-key: ${PROVEEDOR_API_KEY:}
+
+  cors:
+    # Páginas web autorizadas a llamar a la API desde el navegador (separadas por comas).
+    # Nunca "*": eso permitiría que cualquier sitio web use la API desde el navegador de sus visitantes.
+    origenes: ${CORS_ORIGENES:http://localhost:5500,http://127.0.0.1:5500,https://giancarlosdev-10.github.io}

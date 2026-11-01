@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import pe.techstore.api.dto.ActualizarProductoRequest;
 import pe.techstore.api.dto.CrearProductoRequest;
@@ -26,15 +29,17 @@ import pe.techstore.api.repository.ProductoRepository;
  *
  *   GET   /api/productos        -> lista todo el catálogo        (público)
  *   GET   /api/productos/{id}   -> un producto                   (público)
- *   POST  /api/productos        -> crea un producto              (solo ADMIN, desde la Etapa 3)
- *   PUT   /api/productos/{id}   -> REEMPLAZA el producto entero  (solo ADMIN, desde la Etapa 3)
- *   PATCH /api/productos/{id}   -> cambia solo algunos campos    (solo ADMIN, desde la Etapa 3)
+ *   POST  /api/productos        -> crea un producto              (solo ADMIN, Bearer Token)
+ *   PUT   /api/productos/{id}   -> REEMPLAZA el producto entero  (solo ADMIN, Bearer Token)
+ *   PATCH /api/productos/{id}   -> cambia solo algunos campos    (solo ADMIN, Bearer Token)
  *
  * Nota: la seguridad (quién puede usar cada endpoint) NO se escribe aquí,
- * sino en la configuración de Spring Security (Etapa 3).
+ * sino en config/SecurityConfig. Las anotaciones @Operation/@SecurityRequirement
+ * solo documentan la API en Swagger; no protegen nada por sí mismas.
  */
 @RestController
 @RequestMapping("/api/productos")
+@Tag(name = "3. Productos (Bearer)", description = "Lectura pública; crear y modificar requiere Bearer Token de ADMIN")
 public class ProductoController {
 
     private final ProductoRepository productoRepository;
@@ -45,12 +50,14 @@ public class ProductoController {
 
     // GET /api/productos -> 200 con la lista
     @GetMapping
+    @Operation(summary = "Listar catálogo (público)")
     public List<Producto> listar() {
         return productoRepository.findAll();
     }
 
     // GET /api/productos/1 -> 200 con el producto, o 404 si no existe
     @GetMapping("/{id}")
+    @Operation(summary = "Ver un producto (público)")
     public Producto obtener(@PathVariable Long id) {
         return buscarOFallar(id);
     }
@@ -58,6 +65,7 @@ public class ProductoController {
     // POST /api/productos -> 201 Created + header Location con la URL del nuevo producto
     // @Valid hace que se revisen las reglas de CrearProductoRequest (si fallan -> 400)
     @PostMapping
+    @Operation(summary = "Crear producto (ADMIN)", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Producto> crear(@Valid @RequestBody CrearProductoRequest datos) {
         Producto nuevo = new Producto(datos.nombre(), datos.precio(), datos.stock(), datos.categoria());
         Producto guardado = productoRepository.save(nuevo);
@@ -87,6 +95,8 @@ public class ProductoController {
      * Para cambiar un solo campo, se debe usar PATCH.
      */
     @PutMapping("/{id}")
+    @Operation(summary = "Reemplazar producto completo (ADMIN). Campos no enviados quedan en null",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public Producto reemplazar(@PathVariable Long id, @Valid @RequestBody ActualizarProductoRequest datos) {
         Producto producto = buscarOFallar(id);
 
@@ -106,6 +116,7 @@ public class ProductoController {
      * Resultado: solo cambia el precio. Nombre, stock y categoría siguen igual.
      */
     @PatchMapping("/{id}")
+    @Operation(summary = "Actualizar solo los campos enviados (ADMIN)", security = @SecurityRequirement(name = "bearerAuth"))
     public Producto actualizarParcial(@PathVariable Long id, @Valid @RequestBody ActualizarProductoRequest datos) {
         Producto producto = buscarOFallar(id);
 

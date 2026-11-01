@@ -24,6 +24,8 @@
 
     <properties>
         <java.version>21</java.version>
+        <jjwt.version>0.13.0</jjwt.version>
+        <springdoc.version>2.10.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -50,6 +52,50 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Spring Security: protege las rutas (quién puede entrar a cada endpoint) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- jjwt: crear y verificar tokens JWT (los Bearer Tokens de esta API) -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- springdoc-openapi: genera la documentación de la API y la página Swagger UI
+             (/swagger-ui.html) para probar los endpoints desde el navegador.
+             La versión 2.x es la que corresponde a Spring Boot 3. -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+        </dependency>
+
+        <!-- Configuration Processor: al compilar, lee las clases @ConfigurationProperties
+             y genera un archivo de "metadatos". El editor lo usa para reconocer nuestras
+             propiedades (techstore.*) en application.yml: autocompletado y sin avisos.
+             "optional" = solo se usa al compilar, no viaja dentro del .jar final. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Pruebas automáticas (JUnit, etc.) -->
