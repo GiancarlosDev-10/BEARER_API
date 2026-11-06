@@ -20,7 +20,7 @@
 // ---------- Configuración ----------
 
 // URL del backend publicado en Render. ¡Cámbiala por la de tu servicio!
-const URL_RENDER = "https://techstore-api.onrender.com";
+const URL_RENDER = "https://techstore-api-2znp.onrender.com";
 
 // Si la página se abre en tu computadora, usa el backend local; si no, el de Render.
 const ES_LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);

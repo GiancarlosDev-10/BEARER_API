@@ -305,7 +305,7 @@ Funciones:
 
 | Parte | Dónde | URL |
 |---|---|---|
-| Backend | Render (Docker, plan gratuito) | `https://techstore-api.onrender.com` *(o la que te asigne Render)* |
+| Backend | Render (Docker, plan gratuito) | `https://techstore-api-2znp.onrender.com` |
 | Frontend | GitHub Pages (carpeta `docs/`) | `https://giancarlosdev-10.github.io/BEARER_API/` |
 | Mantener despierto | cron-job.org | ping cada 10 min a `/api/public/estado` |
 
